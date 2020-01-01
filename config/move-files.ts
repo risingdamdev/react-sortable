@@ -3,6 +3,8 @@ import copyDir from "copy-dir";
 import { resolve } from "path";
 import { mkdirSync } from "fs";
 
+// moves sortablejs types to module.
+
 const from = resolve(__dirname, "../node_modules/@types/sortablejs");
 const to = resolve(__dirname, "../dist/node_modules/@types/sortablejs");
 
