@@ -1,7 +1,6 @@
 import { Selector } from "testcafe";
 
-fixture("Simple sorting")
-  .page("http://localhost:1234/")
+fixture("Simple sorting").page("http://localhost:1234/");
 
 const list = Selector("#simple-list");
 
