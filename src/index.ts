@@ -6,6 +6,8 @@ export {
   MoveEvent,
   MultiDrag,
   Options,
+  Options as ReactSortableOptions,
+  Plugin,
   PullResult,
   PutResult,
   SortableEvent,
@@ -13,5 +15,6 @@ export {
   Swap,
   Utils
 } from "sortablejs";
-export { ReactSortable as default, ReactSortable } from "./react-sortable";
-export * from "./types";
+
+export { HookProps, Item, useReactSortable } from "./hooks/use-react-sortable";
+export { ReactSortable, ReactSortableProps } from "./component";
