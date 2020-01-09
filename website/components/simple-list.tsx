@@ -13,7 +13,7 @@ export function SimpleList() {
     >
       {list.map((item, index) => (
         <Item className="test" id={`simple-item-${item.id}`} key={item.id}>
-          {item.name}
+          {item.id}. {item.name}
         </Item>
       ))}
     </ReactSortable>

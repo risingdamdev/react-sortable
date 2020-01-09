@@ -25,4 +25,19 @@ export const Item = styled.div`
   &.sortable-ghost {
     background-color: #c8ebfb;
   }
+  
+  &.sortable-chosen {
+    background-color: pink;
+  }
+
+  &.sortable-drag {
+    background-color: turquoise;
+  }
+
+  /* multi drag */
+  &.sortable-selected {
+    background-color: purple;
+  }
+
+ 
 `;

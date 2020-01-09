@@ -15,7 +15,7 @@ export function Filter() {
     >
       {list.map(item => (
         <CustomItem key={item.id}>
-          {item.name}
+          {item.id}. {item.name}
         </CustomItem>
       ))}
     </ReactSortable>

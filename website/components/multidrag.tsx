@@ -20,7 +20,7 @@ export function MultiDragExample() {
         clone={item => ({ ...item, id: createId() })}
       >
         {list.map(item => (
-          <MultiDragItem key={item.id}>{item.name}</MultiDragItem>
+          <MultiDragItem key={item.id}>{item.id}. {item.name}</MultiDragItem>
         ))}
       </ReactSortable>
       <ReactSortable
@@ -31,7 +31,7 @@ export function MultiDragExample() {
         group="shrek"
       >
         {list1.map(item => (
-          <MultiDragItem key={item.id}>{item.name}</MultiDragItem>
+          <MultiDragItem key={item.id}>{item.id}. {item.name}</MultiDragItem>
         ))}
       </ReactSortable>
     </Column>

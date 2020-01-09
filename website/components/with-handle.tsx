@@ -16,7 +16,9 @@ export function WithHandle() {
       {list.map(item => (
         <CustomItem key={item.id}>
           <FontAwesomeIcon className="handle" icon="grip-lines" />
-          <Span>{item.name}</Span>
+          <Span>
+            {item.id}. {item.name}
+          </Span>
         </CustomItem>
       ))}
     </ReactSortable>
@@ -31,5 +33,5 @@ const CustomItem = styled(Item)`
 `;
 
 const Span = styled.span`
-  margin-left: .5rem;
+  margin-left: 0.5rem;
 `;

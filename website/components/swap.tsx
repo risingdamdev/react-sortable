@@ -10,7 +10,7 @@ export function SwapExample() {
   return (
     <ReactSortable swap list={list} setList={setList} animation={150}>
       {list.map(item => (
-        <SwapItem key={item.id}>{item.name}</SwapItem>
+        <SwapItem key={item.id}>{item.id}. {item.name}</SwapItem>
       ))}
     </ReactSortable>
   );

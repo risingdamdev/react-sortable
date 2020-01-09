@@ -17,17 +17,17 @@ export function DisableSorting() {
         sort={false}
       >
         {list1.map(item => (
-          <Item key={item.id}>{item.name}</Item>
+          <Item key={item.id}>{item.id}. {item.name}</Item>
         ))}
       </ReactSortable>
       <ReactSortable
         list={list2}
         setList={setList2}
-        animation={150}
+        animation={2000}
         group={{ name: "disable-group-name", pull: "clone" }}
       >
         {list2.map(item => (
-          <Item key={item.id}>{item.name}</Item>
+          <Item key={item.id}>{item.id}. {item.name}</Item>
         ))}
       </ReactSortable>
     </Container>

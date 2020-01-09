@@ -15,7 +15,7 @@ export function SharedList() {
         group="shared-group-name"
       >
         {list1.map(item => (
-          <Item key={item.id}>{item.name}</Item>
+          <Item key={item.id}>{item.id}. {item.name}</Item>
         ))}
       </ReactSortable>
       <ReactSortable
@@ -25,7 +25,7 @@ export function SharedList() {
         group="shared-group-name"
       >
         {list2.map(item => (
-          <Item key={item.id}>{item.name}</Item>
+          <Item key={item.id}>{item.id}. {item.name}</Item>
         ))}
       </ReactSortable>
     </Container>

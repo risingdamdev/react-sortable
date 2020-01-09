@@ -16,7 +16,9 @@ export function Cloning() {
         clone={item => ({ ...item, id: createId() })}
       >
         {list1.map(item => (
-          <Item key={item.id}>{item.name}</Item>
+          <Item key={item.id}>
+            {item.id}. {item.name}
+          </Item>
         ))}
       </ReactSortable>
       <ReactSortable
@@ -25,10 +27,9 @@ export function Cloning() {
         animation={150}
         group={{ name: "cloning-group-name", pull: "clone" }}
         clone={item => ({ ...item, id: createId() })}
-
       >
         {list2.map(item => (
-          <Item key={item.id}>{item.name}</Item>
+          <Item key={item.id}>{item.id}. {item.name}</Item>
         ))}
       </ReactSortable>
     </Container>
