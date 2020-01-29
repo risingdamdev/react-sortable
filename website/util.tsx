@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { ItemInterface } from "../src";
+import { Item as ItemInterface } from "../src";
 
 let id = 0;
 
@@ -8,10 +8,10 @@ export const createId = () => id++;
 const defs = { chosen: false, filtered: false, selected: false };
 
 /** Generates uniquie id's for each item when generated */
-export const threes = (): ItemInterface[] => [
+export const threes = () => [
   { id: id++, name: "shrek", ...defs },
   { id: id++, name: "fiona", ...defs },
-  { id: id++, name: "donkey", ...defs, selected: true, filtered: true },
+  { id: id++, name: "donkey", ...defs },
   { id: id++, name: "Lord Faarquad", ...defs }
 ];
 
@@ -25,7 +25,7 @@ export const Item = styled.div`
   &.sortable-ghost {
     background-color: #c8ebfb;
   }
-  
+
   &.sortable-chosen {
     background-color: pink;
   }
@@ -38,6 +38,4 @@ export const Item = styled.div`
   &.sortable-selected {
     background-color: purple;
   }
-
- 
 `;
