@@ -36,14 +36,15 @@ export function useReactSortable<T extends Item, R extends HTMLElement = any>(
 
   // reset state so all booleans are false
   useEffect(() => {
-    const notpure = props.list.some(({ chosen, dragging, selected }) => {
-      return chosen || dragging || selected;
+    const notpure = props.list.some(({ chosen, selected }) => {
+      return chosen || selected;
     });
-    if (notpure) {
-      console.warn(
-        "if your screen is flickering, change all booleans to false."
+
+    if (notpure)
+      throw new Error(
+        'Ensure all items in list have "chosen=false" and "selected=false" on component mount.'
       );
-    }
+
     const initialChange = (prev: T[]) =>
       prev.map(item => ({
         ...item,
