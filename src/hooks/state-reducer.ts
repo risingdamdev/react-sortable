@@ -75,14 +75,7 @@ export function stateReducer<T extends Item>(
       // handle all cases - deslecting 1 item or multiple.
       return onSelectEvents(state, event, false);
     case "onStart":
-      // if chosen, make dragging true
-      return state.map(item =>
-        !!item.chosen ? { ...item, dragging: true } : item
-      );
     case "onEnd":
-      console.log("end");
-      console.table(state);
-      return state.map(item => ({ ...item, dragging: false }));
     case "onChoose":
     // return onChooseEvents(state, event, true);
     case "onUnchoose":
