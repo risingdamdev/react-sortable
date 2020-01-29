@@ -30,7 +30,10 @@ export function createUseEffectChildren<T extends Item, R extends HTMLElement>(
       // if (elements.length !== list.length) throw new Error();
       elements.forEach((element, index) => {
         const item = list[index];
-        if (!item) throw new Error();
+        if (!item)
+          throw new Error(
+            "Cannot find item. Link React state to DOM elements has been done badly."
+          );
         predicate({ element, elements, index, list, item });
       });
     }, [props, options, ...deps]);
