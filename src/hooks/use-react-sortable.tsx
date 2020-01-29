@@ -199,7 +199,7 @@ export type InternalProps<T extends Item, R extends HTMLElement> = {
 /** The shape of the object that each item in the list should be. */
 export interface Item {
   /** A unique ID. You should also use this as the key in your list. */
-  id: string | number;
+  id:  number;
   /** Indicates when the multidrag plugin selected this item. */
   selected?: boolean;
   /** Indicates when this has been chosen by sortable. */
