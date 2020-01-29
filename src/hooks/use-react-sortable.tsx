@@ -33,6 +33,9 @@ export function useReactSortable<T extends Item, R extends HTMLElement = any>(
   // Create standardized props and options
   const props = useInternalProps<R, T>(oldProps);
   const options = useNewOptions(props, oldOptions);
+  // #@todo  —  onClone with clone, onChange with clone,
+
+  const [prep, setPrep] = useState(false);
 
   // reset state so all booleans are false
   useEffect(() => {
@@ -49,9 +52,7 @@ export function useReactSortable<T extends Item, R extends HTMLElement = any>(
       prev.map(item => ({
         ...item,
         chosen: false,
-        dragging: false,
         selected: false
-        // filtered: false,
       }));
     props.setList(initialChange);
   }, []);
@@ -63,6 +64,7 @@ export function useReactSortable<T extends Item, R extends HTMLElement = any>(
   useSortableOptions(props, options);
 
   const useEachChild = createUseEffectChildren(props, options);
+
   // data-id
   useEachChild(({ element, item }) => {
     const dataId = String(item.id);
@@ -165,8 +167,7 @@ function useClassNames<T extends Item>(
       // only classes in here affect changes.
       const classNameState = {
         [selectedClass]: item.selected,
-        [chosenClass]: item.chosen,
-        [dragClass]: item.dragging
+        [chosenClass]: item.chosen
       };
 
       // remove any currently assigned matching classNames.
@@ -204,8 +205,6 @@ export interface Item {
   selected?: boolean;
   /** Indicates when this has been chosen by sortable. */
   chosen?: boolean;
-  /** Indicates when this is dragging across the screen.*/
-  dragging?: boolean;
   /** Indicates if this item is filtered. Sortable controls adding this to the class of the element. */
   filtered?: boolean;
 }
