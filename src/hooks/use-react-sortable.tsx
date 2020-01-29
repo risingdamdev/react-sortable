@@ -109,12 +109,10 @@ function useSortableCreate<T extends Item>(
 ) {
   const { ref, sortable } = props;
   useEffect(() => {
-    if (!ref.current) return;
-    Sortable.create(ref.current, options);
+    if (ref.current) Sortable.create(ref.current, options);
 
     return () => {
-      if (!ref.current) return;
-      sortable?.destroy();
+      if (ref.current) sortable?.destroy();
     };
   }, [ref]);
 }
