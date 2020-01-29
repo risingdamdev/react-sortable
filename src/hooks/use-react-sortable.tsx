@@ -93,13 +93,8 @@ function useInternalProps<R extends HTMLElement, T extends Item>(
 
   const sortable = useMemo(() => {
     if (!ref.current) return null;
-    const key = Object.keys(ref.current).find(k => k.includes("Sortable"));
-    if (!key) throw new Error("Sortable for list not found.");
     //@ts-ignore
-    const sortable = ref.current[key as "sortable[date]"] as
-      | Sortable
-      | undefined;
-    return sortable || null;
+    return Sortable.get(ref.current) as Sortable | null;
   }, [ref, props]);
 
   return { clone: null, list, setList, ref, sortable };
