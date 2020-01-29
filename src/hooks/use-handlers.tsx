@@ -58,17 +58,26 @@ export function useNewOptions<T extends Item, R extends HTMLElement>(
   );
 
   const newOptions = useMemo(() => {
+    
     const onAdd = (event: SortableEvent) => {
       if (!localState.current) throw new Error("onAdd has no local state");
       const std = eventToArray(localState.current, event);
-
+      
       dom.removeEachNode(std);
-
+      
       callHandler(event);
       callSetList(event, (std as unknown) as Standard<T>[]);
     };
-
+    
+    // on change
+    // if pull=== clone, remove clone element?
     const onChange = (event: SortableEvent) => {
+      const std = createStandard(event);
+      if (std.length === 1) {
+        const { clone } = std.pop()!;
+        console.log({event})
+        if (event.pullMode === "clone" && clone) dom.removeNode(clone);
+      }
       callHandler(event);
     };
 
