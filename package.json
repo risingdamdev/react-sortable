@@ -21,7 +21,8 @@
     "build:rollup": " rollup --config config/rollup.config.js",
     "build:tsc": "ts-node config/move-files.ts",
     "examples": "parcel build website/index.html --out-dir temp/website --cache-dir temp/cache --public-url ./",
-    "test": "yarn testcafe --app \"yarn start\" --speed 0.5 chrome ./tests/index.ts ",
+    "test:intergration": "yarn testcafe --app \"yarn start\" --speed 0.5 chrome ./tests/index.ts ",
+    "test:server": "parcel tests/index.html --port 3000 --out-dir temp/test/server --cache-dir temp/test/cache ",
     "toc": "doctoc ."
   },
   "peerDependencies": {
@@ -31,6 +32,7 @@
   "dependencies": {
     "@types/sortablejs": "^1.10.0",
     "classnames": "^2.2.6",
+    "jest-puppeteer": "^4.4.0",
     "sortablejs": "1.10.1",
     "tiny-invariant": "^1.0.6"
   },
@@ -40,14 +42,15 @@
     "@fortawesome/react-fontawesome": "^0.1.7",
     "@testing-library/jest-dom": "^4.1.0",
     "@testing-library/react": "^9.1.4",
-    "@types/cheerio": "^0.22.15",
     "@types/classnames": "^2.2.9",
+    "@types/jest": "^24.0.25",
     "@types/node": "12.7.5",
     "@types/react": "^16.3.0",
     "@types/react-dom": "^16.3.0",
     "@types/styled-components": "^4.1.19",
     "copy-dir": "^1.2.0",
     "doctoc": "^1.4.0",
+    "jest": "^24.9.0",
     "parcel-bundler": "^1.12.4",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
@@ -55,8 +58,8 @@
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-typescript2": "^0.25.3",
     "styled-components": "^4.3.2",
-    "testcafe": "^1.7.0",
-    "ts-node": "^8.5.4",
+    "testcafe": "^1.7.1",
+    "ts-jest": "^24.3.0",
     "typescript": "^3.6.3"
   }
 }
