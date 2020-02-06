@@ -16,5 +16,5 @@ export {
   Utils
 } from "sortablejs";
 
-export { HookProps, Item, useReactSortable } from "./hooks/use-react-sortable";
+export { SortableHookProps as HookProps, Item, useReactSortable } from "./hooks/use-react-sortable";
 export { ReactSortable, ReactSortableProps } from "./component";

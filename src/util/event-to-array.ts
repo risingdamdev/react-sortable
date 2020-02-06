@@ -17,12 +17,12 @@ export function getMode(evt: SortableEvent): Mode {
 
 /**
  * @summary creates a standard API to interact with `SortableEvent` type.
- * @param list
- * @param evt
+ * @param list The current state of the list.
+ * @param evt the event passed from sortable props
+ * 
+ * This does not work with `onMove`, as it doesn't know when it is multidrag, swap, or normal mode.
  */
 
-// @todo - add clones to @types/sortablejs
-// @todo - issues typescript - add default export
 export function eventToArray<T extends Item>(
   list: T[],
   evt: SortableEvent
@@ -71,13 +71,15 @@ export function eventToArray<T extends Item>(
       break;
   }
   const sort = createSort({ type: "oldIndex", ascending: true });
+
+  // attaches the item to the indicies.
   const customs: Standard<T>[] = custom
     .map<Standard<T>>(curr => ({ ...curr, item: list[curr.oldIndex] }))
     .sort(sort);
   return customs;
 }
 
-export interface Standard<T extends Item> {
+export interface Standard<T> {
   parentElement: HTMLElement;
   element: HTMLElement;
   clone: HTMLElement | null;

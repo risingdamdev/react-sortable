@@ -16,11 +16,10 @@
   ],
   "scripts": {
     "prepublishOnly": "yarn build",
-    "start": "parcel website/index.html --out-dir temp/server --cache-dir temp/cache ",
+    "start": "parcel serve website/index.html --out-dir temp/server --cache-dir temp/cache ",
     "build": "yarn build:rollup && yarn build:tsc",
     "build:rollup": " rollup --config config/rollup.config.js",
     "build:tsc": "ts-node config/move-files.ts",
-    "examples": "parcel build website/index.html --out-dir temp/website --cache-dir temp/cache --public-url ./",
     "test:intergration": "yarn testcafe --app \"yarn start\" --speed 0.5 chrome ./tests/index.ts ",
     "test:server": "parcel tests/index.html --port 3000 --out-dir temp/test/server --cache-dir temp/test/cache ",
     "toc": "doctoc ."
@@ -34,7 +33,8 @@
     "classnames": "^2.2.6",
     "jest-puppeteer": "^4.4.0",
     "sortablejs": "1.10.1",
-    "tiny-invariant": "^1.0.6"
+    "tiny-invariant": "^1.0.6",
+    "ts-node": "^8.6.2"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.25",
@@ -54,6 +54,7 @@
     "parcel-bundler": "^1.12.4",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
+    "react-scripts": "^3.3.1",
     "rollup": "^1.27.8",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-typescript2": "^0.25.3",

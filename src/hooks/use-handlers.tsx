@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from "react";
 import { MoveEvent, Options, SortableEvent } from "sortablejs";
-import { Standard, eventToArray } from "../util/event-to-array";
-import { Action, stateReducer } from "./state-reducer";
+import { capitalize, dom } from "../util";
+import { eventToArray, Standard } from "../util/event-to-array";
 import { InternalProps, Item } from "./use-react-sortable";
-import { dom, capitalize } from "../util";
+import { default as Sortable } from "sortablejs";
 
 /**
  * @summary  Handlers.
@@ -14,6 +14,14 @@ import { dom, capitalize } from "../util";
  * - Modify local state.
  * - Call `props[onHandler](evt)`.
  * - Call `props.setList(newState)` after modifying state.
+ * @todo
+ * + sorting
+ *  + any sorting actions sshould be done with onMove
+ *  + react state should change during onMove but not change the DOM while dragging.
+ *  + once dragging has ended, then apply other state changes
+ * + onSpill
+ *  + store state on move.
+ *  + previous state so we can revert back to it.
  */
 export function useNewOptions<T extends Item, R extends HTMLElement>(
   props: InternalProps<T, R>,
@@ -26,174 +34,145 @@ export function useNewOptions<T extends Item, R extends HTMLElement>(
     (event: SortableEvent) => {
       const name = capitalize(event.type) as Exclude<Handlers, "onMove">;
       const onHandler = options[name];
-      console.log(name);
       if (onHandler) onHandler(event);
     },
     [props, options]
   );
 
-  const createStandard = useCallback(
-    (event: SortableEvent) => {
-      return eventToArray(props.list, event);
-    },
-    [props]
-  );
-
-  const callSetList = useCallback(
-    (event: SortableEvent, std: Standard<T>[]) => {
-      const action: Action<T> = {
-        clone: props.clone,
-        event,
-        std,
-        type: capitalize(event.type) as Exclude<Handlers, "onMove">
+  // create the options object that `Sortable.create` will consume.
+  const newOptions: NewOptions = useMemo(() => {
+    /**
+     * We attach any `options.on[Handler]` callback provided by the user
+     * into the object.
+     */
+    const normal = ([
+      "onAdd",
+      "onChange",
+      "onClone",
+      "onFilter",
+      "onRemove",
+      "onSort",
+      "onUpdate"
+    ] as const).reduce((prev, eventName) => {
+      prev[eventName] = (event: SortableEvent) => {
+        callHandler(event);
       };
+      return prev;
+    }, {} as NormalHandlers);
+    // anything to do with the dragging of items
+    // and changes of sorting
+    //should only be done by `onMove`
 
-      props.setList(prev => {
-        const newState = stateReducer(prev, action);
-        if (!newState) return prev;
-        return newState;
-      });
-    },
-    [props, options]
-  );
-
-  const newOptions = useMemo(() => {
-    
-    const onAdd = (event: SortableEvent) => {
-      if (!localState.current) throw new Error("onAdd has no local state");
-      const std = eventToArray(localState.current, event);
-      
-      dom.removeEachNode(std);
-      
-      callHandler(event);
-      callSetList(event, (std as unknown) as Standard<T>[]);
-    };
-    
-    // on change
-    // if pull=== clone, remove clone element?
-    const onChange = (event: SortableEvent) => {
-      const std = createStandard(event);
-      if (std.length === 1) {
-        const { clone } = std.pop()!;
-        console.log({event})
-        if (event.pullMode === "clone" && clone) dom.removeNode(clone);
-      }
-      callHandler(event);
-    };
+    // choose handlers
 
     const onChoose = (event: SortableEvent) => {
-      const std = createStandard(event);
       callHandler(event);
-      callSetList(event, std);
+    };
+    const onUnchoose = (event: SortableEvent) => {
+      callHandler(event);
     };
 
-    const onClone = (event: SortableEvent) => {
+    // select handlers
+
+    const onSelect = (event: SortableEvent) => {
       callHandler(event);
     };
 
     const onDeselect = (event: SortableEvent) => {
-      const std = createStandard(event);
       callHandler(event);
-      callSetList(event, std);
+    };
+
+    // lifecycle handlers
+
+    // create the standards thing because this has multidrag properties in it.
+    const onStart = (event: SortableEvent) => {
+      localState.current = props.list;
+      callHandler(event);
     };
 
     const onEnd = (event: SortableEvent) => {
       localState.current = null;
-      const std = createStandard(event);
-      callHandler(event);
-      callSetList(event, std);
-    };
-
-    const onFilter = (event: SortableEvent) => {
       callHandler(event);
     };
 
-    const onMove: Required<OptionHandlers>["onMove"] = (
+    // @ts-ignore
+    const onMove: RequiredOptions["onMove"] = (
       event: MoveEvent,
       originalEvent: Event
     ) => {
-      const onHandler = options.onMove;
-      // @todo - true || -1 as type doesn't seem right.
-      const defaultValue = event.willInsertAfter || -1;
-      if (!onHandler) return defaultValue;
-      return onHandler(event, originalEvent) || defaultValue;
-    };
+      // @todo - add void to return type
+      // -1 | 1 | false | void
+      const result =
+        options.onMove &&
+        (options.onMove(event, originalEvent) as undefined | -1 | 1 | false);
 
-    const onRemove = (event: SortableEvent) => {
-      const std = createStandard(event);
+      const getChildrenFromChild = (child: HTMLElement) => {
+        const collection = child.parentElement?.children;
+        if (!collection) throw new Error();
+        return Array.from(collection);
+      };
 
-      dom.insertEachNode(std);
-      if (event.pullMode === "clone") {
-        // if pull mode is clone, also remove the cloned DOM elements.
-        std.forEach(curr => {
-          if (!curr.clone) throw new Error("should have a clone here.");
-          dom.removeNode(curr.clone);
-        });
-      }
+      const getIndexOfElement = (element: HTMLElement) =>
+        getChildrenFromChild(element).indexOf(element);
 
-      callHandler(event);
-      callSetList(event, std);
-    };
+      const calcNewIndex = (): number => {
+        const newIndex = getIndexOfElement(event.related);
+        return result === -1 ? newIndex - 1 : newIndex;
+      };
 
-    const onSelect = (event: SortableEvent) => {
-      const std = createStandard(event);
-      callHandler(event);
-      callSetList(event, std);
-    };
+      const oldIndex = getIndexOfElement(event.dragged);
+      const newIndex = calcNewIndex();
 
-    const onSort = (event: SortableEvent) => {
-      callHandler(event);
+      // from !== to ? different lists: same lists.
+      // remove item from old list, add to new list. could be same.
+
+      console.log({ oldIndex, newIndex });
+      // change old index number
+
+      // if (result === -1) {
+
+      //   // if -1, item is before
+      //   props.setList(prevList => {
+      //     const newList = [...prevList];
+
+      //     return newList;
+      //   });
+      // }
+
+      // // before anything,
+      // // swap old with new
+
+      // // if 1, item is after
+      // if (result === -1) {
+      //   props.setList(prevList => {
+      //     const newList = [...prevList];
+      //     return newList;
+      //   });
+      // }
+      // // if false, item does nothing.
+      // return result;
     };
 
     const onSpill = (event: SortableEvent) => {
-      if (options.removeOnSpill && !options.revertOnSpill) {
-        dom.removeNode(event.item);
-      }
+      const removeable = options.removeOnSpill && !options.revertOnSpill;
+      if (removeable) dom.insertNodeAt(event.from, event.item, event.oldIndex!);
       callHandler(event);
-    };
-
-    const onStart = (event: SortableEvent) => {
-      localState.current = props.list;
-      const std = createStandard(event);
-      callHandler(event);
-      callSetList(event, std);
-    };
-
-    const onUnchoose = (event: SortableEvent) => {
-      const std = createStandard(event);
-      callHandler(event);
-      callSetList(event, std);
-    };
-
-    const onUpdate = (event: SortableEvent) => {
-      const std = createStandard(event);
-
-      dom.removeEachNode(std);
-      dom.insertEachNode(std);
-
-      callHandler(event);
-      callSetList(event, std);
+      // props.setList(prevList => prevList);
     };
 
     return {
       ...options,
-      onAdd,
-      onChange,
+      ...normal,
       onChoose,
-      onClone,
       onDeselect,
       onEnd,
-      onFilter,
       onMove,
-      onRemove,
       onSelect,
-      onSort,
       onSpill,
       onStart,
-      onUnchoose,
-      onUpdate
+      onUnchoose
     };
-  }, [props, options]);
+  }, [props, options, callHandler]);
   return newOptions;
 }
 
@@ -201,6 +180,7 @@ const localState: LocalState = {
   current: null
 };
 
+/** Used to infer types. */
 const types = [
   "onAdd",
   "onChange",
@@ -219,12 +199,38 @@ const types = [
   "onUpdate"
 ] as const;
 
-/** A list of all handlers. */
+/**
+ * A list of all handler names as a string union
+ */
 export type Handlers = typeof types extends ReadonlyArray<infer T> ? T : never;
-export type OptionHandlers = Pick<Options, Handlers>;
-export type RequiredOptions = Required<OptionHandlers>;
-export type NewOptions = Options & RequiredOptions;
+
+/**
+ * All of the handler methods that we need to add custom callbacks to.
+ */
+export type RequiredOptions = Required<Pick<Sortable.Options, Handlers>>;
+
+/**
+ * A mix between the partial options and required methods.
+ * This gets passed into sortable.create and sortbale. add options.
+ */
+export type NewOptions = Omit<Options, Handlers> & RequiredOptions;
 
 export interface LocalState<T extends Item = any> {
   current: null | T[];
 }
+
+/**
+ * Handlers that don't have any special DOM handling logic.
+ */
+export type NormalHandlers = Required<
+  Pick<
+    Sortable.Options,
+    | "onAdd"
+    | "onChange"
+    | "onClone"
+    | "onFilter"
+    | "onRemove"
+    | "onSort"
+    | "onUpdate"
+  >
+>;

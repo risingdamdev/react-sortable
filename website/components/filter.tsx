@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { ReactSortable, ItemInterface } from "../../src";
-import { Item, threes } from "../util";
 import styled from "styled-components";
+import { ReactSortable } from "../../src";
+import { Item, threes } from "../util";
 
 
 export function Filter() {

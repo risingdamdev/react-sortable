@@ -7,14 +7,6 @@ export const capitalize = (type: string) => {
   return "on" + name;
 };
 
-// start at -1 and traverse backwards.
-let uuid = -1;
-
-export const createClone = <T extends Item>(item: T) => {
-  let id: T["id"] = uuid--;
-  if (typeof item.id === "string") id = String(id);
-  return { ...item, id };
-};
 
 export interface SortParams {
   /** @default 'oldIndex' */
