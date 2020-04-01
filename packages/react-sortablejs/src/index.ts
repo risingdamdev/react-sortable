@@ -1,15 +1,9 @@
-import {
-  array,
-  either,
-  ioEither,
-  option,
-  record,
-  function as fn,
-  eq
-} from "fp-ts";
+import { ioEither, option, record, array } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
 import { useEffect, useMemo, useRef } from "react";
 import Sortable from "sortablejs";
+import { normalizeEvent } from "./sortable-utils";
+import { removeElement, addElementAtIndex } from "./dom-utils";
 
 export interface ID {
   id: string;
@@ -89,94 +83,30 @@ export const useSortable = <T extends ID>(
 
   const sortable = useGetSortable(ref);
 
-  const newOptions = useMemo(
-    () =>
-      ({
-        ...options
-        // move from old pos to new pos
-      } as Sortable.Options),
+  const newOptions: Sortable.Options = useMemo(
+    () => ({
+      ...options,
+      // move from old pos to new pos
+      onUpdate: evt => {
+        // remove one, delete one
+        const a = pipe(evt, normalizeEvent);
+
+        pipe(
+          a,
+          array.map(b => removeElement(b.element))
+        );
+        pipe(
+          a,
+          array.map(b => addElementAtIndex(b.parent, b.element, b.newIndex))
+        );
+      }
+    }),
     [options]
   );
 
   useEffect(() => {
-    effectUpdateOptions(sortable.current, options)();
+    effectUpdateOptions(sortable.current, newOptions)();
   }, [sortable, options]);
 
   return useList;
 };
-
-interface NormalizedEvent {
-  parent: HTMLElement;
-  element: HTMLElement;
-  oldIndex: number;
-  newIndex: number;
-}
-
-const normalizeEventMultidrag = (evt: Sortable.SortableEvent) => (
-  oldIndicies: Sortable.SortableEvent["oldIndicies"]
-): NormalizedEvent[] =>
-  pipe(
-    oldIndicies,
-    array.mapWithIndex((idx, curr) => ({
-      parent: evt.from,
-      element: curr.multiDragElement,
-      oldIndex: curr.index,
-      newIndex: evt.newIndicies[idx].index
-    }))
-  );
-
-const normalizeEventSwap = (evt: Sortable.SortableEvent): NormalizedEvent[] => [
-  // drag item
-  {
-    element: evt.item,
-    oldIndex: evt.oldIndex!,
-    newIndex: evt.newIndex!,
-    parent: evt.from
-  },
-  // swap item
-  {
-    element: evt.swapItem!,
-    oldIndex: evt.newIndex!,
-    newIndex: evt.oldIndex!,
-    parent: evt.to
-  }
-];
-
-const normalizeEventNormal = (
-  evt: Sortable.SortableEvent
-): NormalizedEvent[] => [
-  {
-    element: evt.item,
-    newIndex: evt.newIndex!,
-    oldIndex: evt.oldIndex!,
-    parent: evt.from
-  }
-];
-
-const isMultiDrag = (evt: Sortable.SortableEvent) =>
-  evt.oldIndicies && evt.oldIndicies.length > 0;
-
-// todo - calm down this child, he's screaming to be parametized!
-const normalizeEvent = (evt: Sortable.SortableEvent) =>
-  pipe(
-    evt.oldIndicies,
-    either.right,
-    either.chain(a =>
-      pipe(
-        evt,
-        either.fromPredicate(isMultiDrag, () => a),
-        either.map(f => normalizeEventMultidrag(evt)(evt.oldIndicies)),
-        either.swap
-      )
-    ),
-    either.chain(a =>
-      pipe(
-        evt.swapItem,
-        either.fromNullable(a),
-        either.map(() => normalizeEventSwap(evt)),
-        either.swap
-      )
-    ),
-    either.swap,
-    either.getOrElse(() => normalizeEventNormal(evt))
-  );
