@@ -1,9 +1,9 @@
-import { ioEither, option, record, array } from "fp-ts";
+import { array, io, ioEither, option, ord, record } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
 import { useEffect, useMemo, useRef } from "react";
 import Sortable from "sortablejs";
-import { normalizeEvent } from "./sortable-utils";
-import { removeElement, addElementAtIndex } from "./dom-utils";
+import { removeElement } from "./dom-utils";
+import { NormalizedEvent, normalizeEvent } from "./sortable-utils";
 
 export interface ID {
   id: string;
@@ -73,6 +73,11 @@ const useGetSortable = (ref: UseSortableParams["ref"]) => {
 
 // add it back in
 
+const ordOldIndex = pipe(
+  ord.ordNumber,
+  ord.contramap((normalized: NormalizedEvent) => normalized.oldIndex)
+);
+
 export const useSortable = <T extends ID>(
   { ref, useList }: UseSortableParams<T>,
   options: Sortable.Options = {}
@@ -87,19 +92,43 @@ export const useSortable = <T extends ID>(
     () => ({
       ...options,
       // move from old pos to new pos
-      onUpdate: evt => {
-        // remove one, delete one
-        const a = pipe(evt, normalizeEvent);
-
+      onUpdate: evt =>
         pipe(
-          a,
-          array.map(b => removeElement(b.element))
-        );
+          evt,
+          normalizeEvent,
+          array.sort(ordOldIndex),
+          array.map(({ parent, element, oldIndex }) =>
+            pipe(
+              removeElement(element),
+              io.map(() => parent.children.item(oldIndex) ?? null),
+              io.map(a => parent.insertBefore(element, a))
+            )
+          ),
+          array.array.sequence(io.io)
+        )(),
+      onAdd: evt =>
         pipe(
-          a,
-          array.map(b => addElementAtIndex(b.parent, b.element, b.newIndex))
-        );
-      }
+          evt,
+          normalizeEvent,
+          array.sort(ordOldIndex),
+          array.map(({ element }) => removeElement(element)),
+          array.array.sequence(io.io)
+        )(),
+      // order max value i think
+      onRemove: evt =>
+        pipe(
+          evt,
+          normalizeEvent,
+          array.sort(ordOldIndex),
+          array.map(({ element, oldIndex, parent }) =>
+            pipe(
+              io.of(null),
+              io.map(() => parent.children.item(oldIndex) ?? null),
+              io.map(a => parent.insertBefore(element, a))
+            )
+          ),
+          array.array.sequence(io.io)
+        )
     }),
     [options]
   );
