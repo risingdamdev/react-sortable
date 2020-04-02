@@ -1,8 +1,8 @@
 import { array, io, ioEither, option, ord, record } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Sortable from "sortablejs";
-import { removeElement } from "./dom-utils";
+import { removeElement, addElement } from "./dom-utils";
 import { NormalizedEvent, normalizeEvent } from "./sortable-utils";
 
 export interface ID {
@@ -53,9 +53,7 @@ const effectUpdateOptions = (
     ioEither.chain(updateOptions(options))
   );
 
-const getSortable = (el: HTMLElement) =>
-  //@ts-ignore
-  option.fromNullable(Sortable.get(el) as Sortable | null);
+const getSortable = (el: HTMLElement) => option.fromNullable(Sortable.get(el));
 
 const useGetSortable = (ref: UseSortableParams["ref"]) => {
   const sortable = useRef<option.Option<Sortable>>(option.none);
@@ -78,10 +76,24 @@ const ordOldIndex = pipe(
   ord.contramap((normalized: NormalizedEvent) => normalized.oldIndex)
 );
 
+const onUpdateDOM = ({ parent, element, oldIndex }: NormalizedEvent) =>
+  pipe(
+    removeElement(element),
+    ioEither.rightIO,
+    ioEither.chain(() => addElement(parent, element, oldIndex))
+  );
+
 export const useSortable = <T extends ID>(
   { ref, useList }: UseSortableParams<T>,
   options: Sortable.Options = {}
 ) => {
+  const [userList, setUserList] = useList;
+  const [list, setList] = useState(userList);
+
+  useEffect(() => {
+    setUserList(list);
+  }, [list]);
+
   useEffect(() => {
     effectCreateSortable(option.fromNullable(ref.current), options)();
   }, [ref]);
@@ -97,14 +109,9 @@ export const useSortable = <T extends ID>(
           evt,
           normalizeEvent,
           array.sort(ordOldIndex),
-          array.map(({ parent, element, oldIndex }) =>
-            pipe(
-              removeElement(element),
-              io.map(() => parent.children.item(oldIndex) ?? null),
-              io.map(a => parent.insertBefore(element, a))
-            )
-          ),
-          array.array.sequence(io.io)
+          array.map(onUpdateDOM),
+          array.array.sequence(ioEither.ioEither)
+          //reduce to the list array
         )(),
       onAdd: evt =>
         pipe(
@@ -114,21 +121,17 @@ export const useSortable = <T extends ID>(
           array.map(({ element }) => removeElement(element)),
           array.array.sequence(io.io)
         )(),
-      // order max value i think
       onRemove: evt =>
         pipe(
           evt,
           normalizeEvent,
           array.sort(ordOldIndex),
+          array.reverse,
           array.map(({ element, oldIndex, parent }) =>
-            pipe(
-              io.of(null),
-              io.map(() => parent.children.item(oldIndex) ?? null),
-              io.map(a => parent.insertBefore(element, a))
-            )
+            addElement(parent, element, oldIndex)
           ),
-          array.array.sequence(io.io)
-        )
+          array.array.sequence(ioEither.ioEither)
+        )()
     }),
     [options]
   );

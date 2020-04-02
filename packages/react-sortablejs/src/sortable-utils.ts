@@ -1,6 +1,6 @@
-import Sortable from "sortablejs";
-import { array, either, function as fn, option } from "fp-ts";
+import { array, either, function as fn } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
+import Sortable from "sortablejs";
 
 export interface NormalizedEvent {
   parent: HTMLElement;
@@ -50,15 +50,17 @@ const normalizeEventNormal = (
   }
 ];
 
+const isMultidrag = (evt: Sortable.SortableEvent) =>
+  evt.oldIndicies && evt.oldIndicies.length > 0;
+
+const isSwap = (evt: Sortable.SortableEvent) => !!evt.swapItem;
+
 // todo - calm down this child, he's screaming to be parametized!
 export const normalizeEvent = (evt: Sortable.SortableEvent) =>
   pipe(
     either.right(evt),
-    either.filterOrElse(a => !a.swapItem, normalizeEventSwap),
-    either.filterOrElse(
-      a => !(a.oldIndicies && a.oldIndicies.length > 0),
-      normalizeEventMultidrag
-    ),
+    either.filterOrElse(fn.not(isSwap), normalizeEventSwap),
+    either.filterOrElse(fn.not(isMultidrag), normalizeEventMultidrag),
     either.swap,
     either.getOrElse(normalizeEventNormal)
   );

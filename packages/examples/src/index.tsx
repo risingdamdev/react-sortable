@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useRef, useState } from "react";
 import { useSortable } from "react-sortablejs";
-import { array } from "fp-ts";
+import { array, function as fn } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
 
 let id = 0;
