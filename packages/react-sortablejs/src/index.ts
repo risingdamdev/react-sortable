@@ -2,8 +2,9 @@ import { array, io, ioEither, option, ord, record } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Sortable from "sortablejs";
-import { removeElement, addElement } from "./dom-utils";
 import { NormalizedEvent, normalizeEvent } from "./sortable-utils";
+import { remove, insertAtIndex } from "dom-ts";
+import { onUpdateDOM, onAddDOM, onRemoveDOM, ordOldIndex } from "./actions";
 
 export interface ID {
   id: string;
@@ -71,18 +72,6 @@ const useGetSortable = (ref: UseSortableParams["ref"]) => {
 
 // add it back in
 
-const ordOldIndex = pipe(
-  ord.ordNumber,
-  ord.contramap((normalized: NormalizedEvent) => normalized.oldIndex)
-);
-
-const onUpdateDOM = ({ parent, element, oldIndex }: NormalizedEvent) =>
-  pipe(
-    removeElement(element),
-    ioEither.rightIO,
-    ioEither.chain(() => addElement(parent, element, oldIndex))
-  );
-
 export const useSortable = <T extends ID>(
   { ref, useList }: UseSortableParams<T>,
   options: Sortable.Options = {}
@@ -104,34 +93,18 @@ export const useSortable = <T extends ID>(
     () => ({
       ...options,
       // move from old pos to new pos
-      onUpdate: evt =>
-        pipe(
-          evt,
-          normalizeEvent,
-          array.sort(ordOldIndex),
-          array.map(onUpdateDOM),
-          array.array.sequence(ioEither.ioEither)
-          //reduce to the list array
-        )(),
-      onAdd: evt =>
-        pipe(
-          evt,
-          normalizeEvent,
-          array.sort(ordOldIndex),
-          array.map(({ element }) => removeElement(element)),
-          array.array.sequence(io.io)
-        )(),
-      onRemove: evt =>
-        pipe(
-          evt,
-          normalizeEvent,
-          array.sort(ordOldIndex),
-          array.reverse,
-          array.map(({ element, oldIndex, parent }) =>
-            addElement(parent, element, oldIndex)
-          ),
-          array.array.sequence(ioEither.ioEither)
-        )()
+      onUpdate: (evt) => {
+        const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
+        onUpdateDOM(normalized)();
+      },
+      onAdd: (evt) => {
+        const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
+        onAddDOM(normalized)();
+      },
+      onRemove: (evt) => {
+        const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
+        onRemoveDOM(normalized)();
+      },
     }),
     [options]
   );

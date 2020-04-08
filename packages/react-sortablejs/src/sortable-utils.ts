@@ -18,7 +18,7 @@ const normalizeEventMultidrag = (
       parent: evt.from,
       element: curr.multiDragElement,
       oldIndex: curr.index,
-      newIndex: evt.newIndicies[idx].index
+      newIndex: evt.newIndicies[idx].index,
     }))
   );
 
@@ -28,15 +28,15 @@ const normalizeEventSwap = (evt: Sortable.SortableEvent): NormalizedEvent[] => [
     element: evt.item,
     oldIndex: evt.oldIndex!,
     newIndex: evt.newIndex!,
-    parent: evt.from
+    parent: evt.from,
   },
   // swap item
   {
     element: evt.swapItem!,
     oldIndex: evt.newIndex!,
     newIndex: evt.oldIndex!,
-    parent: evt.to
-  }
+    parent: evt.to,
+  },
 ];
 
 const normalizeEventNormal = (
@@ -46,8 +46,8 @@ const normalizeEventNormal = (
     element: evt.item,
     newIndex: evt.newIndex!,
     oldIndex: evt.oldIndex!,
-    parent: evt.from
-  }
+    parent: evt.from,
+  },
 ];
 
 const isMultidrag = (evt: Sortable.SortableEvent) =>
@@ -55,7 +55,6 @@ const isMultidrag = (evt: Sortable.SortableEvent) =>
 
 const isSwap = (evt: Sortable.SortableEvent) => !!evt.swapItem;
 
-// todo - calm down this child, he's screaming to be parametized!
 export const normalizeEvent = (evt: Sortable.SortableEvent) =>
   pipe(
     either.right(evt),
