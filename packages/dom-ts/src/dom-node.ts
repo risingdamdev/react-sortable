@@ -1,5 +1,27 @@
-import { either, io, ioEither, option } from "fp-ts";
+import { either, io, ioEither, option, array } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
+import { IOEither } from "fp-ts/lib/IOEither";
+
+export interface QuerySelector {
+  <K extends keyof HTMLElementTagNameMap>(selectors: K):
+    | HTMLElementTagNameMap[K]
+    | null;
+  <K extends keyof SVGElementTagNameMap>(selectors: K):
+    | SVGElementTagNameMap[K]
+    | null;
+  <E extends Element = Element>(selectors: string): <T extends ParentNode>(
+    node: T
+  ) => IOEither<null, E>;
+}
+
+export const querySelector: QuerySelector = <E extends Element>(
+  selectors: string
+) => <T extends ParentNode>(node: T) =>
+  pipe(
+    node.querySelector<E>(selectors),
+    option.fromNullable,
+    ioEither.fromOption(() => null)
+  );
 
 export const contains = <T extends Node>(other: T) => <U extends Node>(
   node: U
@@ -28,9 +50,6 @@ export const appendChild = <T extends Node>(child: T) => <N extends Node>(
 export const remove = <T extends ChildNode>(childNode: T) =>
   io.of(childNode.remove());
 
-const withinInsertableRange = (index: number, arrayLike: ArrayLike<any>) =>
-  index >= 0 && index <= arrayLike.length;
-
 export const insertAtIndex = <T extends Node>(child: T, index: number) => <
   N extends Node
 >(
@@ -39,7 +58,7 @@ export const insertAtIndex = <T extends Node>(child: T, index: number) => <
   pipe(
     parent.childNodes,
     either.fromPredicate(
-      (c) => withinInsertableRange(index, c),
+      (c) => array.isOutOfBound(index, Array.from(c)),
       (c) => [
         `Cannot insert at index "${index}" when arrayLike length is "${c.length}"`,
       ]

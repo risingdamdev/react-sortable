@@ -11,8 +11,7 @@
   "aliases": {
     "react": "preact/compat",
     "react-dom/test-utils": "preact/test-utils",
-    "react-dom": "preact/compat",
-    "react-sortablejs": "file:../react-sortablejs"
+    "react-dom": "preact/compat"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",

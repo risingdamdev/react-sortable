@@ -1,10 +1,9 @@
-import { array, io, ioEither, option, ord, record } from "fp-ts";
+import { array, ioEither, option, record } from "fp-ts";
 import { pipe } from "fp-ts/lib/pipeable";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Sortable from "sortablejs";
-import { NormalizedEvent, normalizeEvent } from "./sortable-utils";
-import { remove, insertAtIndex } from "dom-ts";
-import { onUpdateDOM, onAddDOM, onRemoveDOM, ordOldIndex } from "./actions";
+import { onAddDOM, onRemoveDOM, onUpdateDOM, ordOldIndex } from "./actions-dom";
+import { normalizeEvent } from "./normalize-event";
 
 export interface ID {
   id: string;
@@ -93,18 +92,24 @@ export const useSortable = <T extends ID>(
     () => ({
       ...options,
       // move from old pos to new pos
-      onUpdate: (evt) => {
-        const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
-        onUpdateDOM(normalized)();
-      },
-      onAdd: (evt) => {
-        const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
-        onAddDOM(normalized)();
-      },
-      onRemove: (evt) => {
-        const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
-        onRemoveDOM(normalized)();
-      },
+      // onUpdate: (evt) => {
+      //   const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
+      //   onUpdateDOM(normalized)();
+      //   // iterate normalized, get all state items by index
+
+      //   // iterate normalized, remove one by one from end
+
+      //   // iterate normalized, insert one by one from start
+      //   const newList = pipe(normalized);
+      // },
+      // onAdd: (evt) => {
+      //   const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
+      //   onAddDOM(normalized)();
+      // },
+      // onRemove: (evt) => {
+      //   const normalized = pipe(normalizeEvent(evt), array.sort(ordOldIndex));
+      //   onRemoveDOM(normalized)();
+      // },
     }),
     [options]
   );

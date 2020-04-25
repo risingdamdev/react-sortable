@@ -1,7 +1,7 @@
+import { array } from "fp-ts";
+import { pipe } from "fp-ts/lib/pipeable";
 import React, { FunctionComponent, useRef, useState } from "react";
 import { useSortable } from "react-sortablejs";
-import { array, function as fn } from "fp-ts";
-import { pipe } from "fp-ts/lib/pipeable";
 
 let id = 0;
 const createId = () => (id++).toString();
@@ -9,7 +9,7 @@ const createId = () => (id++).toString();
 const newItems = () =>
   pipe(
     ["shrek", "fiona", "donkey"],
-    array.map(name => ({ id: createId(), name }))
+    array.map((name) => ({ id: createId(), name }))
   );
 
 export const ExampleOne: FunctionComponent = () => {
@@ -22,7 +22,7 @@ export const ExampleOne: FunctionComponent = () => {
 
   return (
     <ul className="p-4" ref={ref}>
-      {list.map(item => (
+      {list.map((item) => (
         <li className="p-2 bg-blue-300 mb-1 rounded-sm" key={item.id}>
           {item.name}
         </li>
