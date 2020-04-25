@@ -4,8 +4,7 @@ import { useSortable } from "react-sortablejs";
 // fixtures
 
 export interface Fixture {
-  name: string;
-  component: React.ComponentType;
+  [name: string]: React.ComponentType;
 }
 
 export const classes = {
@@ -13,33 +12,30 @@ export const classes = {
   list: "p-2 bg-white border-gray-600 border rounded-sm mb-1",
 };
 
-export const fixtures: Fixture[] = [
-  {
-    name: "test-01",
-    component: () => {
-      const ref = React.useRef(null);
-      const [list] = useSortable({
-        ref,
-        useList: React.useState([
-          { id: "11", value: "shrek" },
-          { id: "22", value: "fiona" },
-          { id: "33", value: "donkey" },
-          { id: "44", value: "lord faarquad" },
-        ]),
-      });
+export const fixtures: Fixture = {
+  "test-01": () => {
+    const ref = React.useRef(null);
+    const [list] = useSortable({
+      ref,
+      useList: React.useState([
+        { id: "11", value: "shrek" },
+        { id: "22", value: "fiona" },
+        { id: "33", value: "donkey" },
+        { id: "44", value: "lord faarquad" },
+      ]),
+    });
 
-      return (
-        <ul ref={ref} className={classes.container}>
-          {list.map(({ id, value }) => (
-            <li key={id} className={classes.list}>
-              {value}
-            </li>
-          ))}
-        </ul>
-      );
-    },
+    return (
+      <ul ref={ref} className={classes.container}>
+        {list.map(({ id, value }) => (
+          <li key={id} className={classes.list}>
+            {value}
+          </li>
+        ))}
+      </ul>
+    );
   },
-];
+};
 
 // boilerplate
 
