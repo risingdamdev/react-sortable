@@ -59,7 +59,7 @@
     "prettier": "^2.1.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "semantic-release": "^17.1.2",
+    "semantic-release": "^19.0.3",
     "sortablejs": "^1.10.0",
     "ts-jest": "^26.4.0",
     "ts-node": "^9.0.0",
